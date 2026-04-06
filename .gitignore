@@ -1,0 +1,44 @@
+ Compiled output
+target/
+dependency-reduced-pom.xml
+
+# JavaFX app image (created by jpackage)
+NoteTaker/
+
+# Installer files (Windows, macOS, Linux)
+*.msi
+*.exe
+*.dmg
+*.deb
+*.rpm
+*.zip
+
+# IDE files (IntelliJ, Eclipse, VS Code)
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.vscode/
+
+# Maven log
+mvnw
+mvnw.cmd
+.mvn/
+
+# OS metadata
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local configuration (if any)
+*.properties.user
+*.conf.user
+
+# Backup files
+*.bak
+*.orig
+*.tmp
+*.wxs
+*.json
+*.msi
