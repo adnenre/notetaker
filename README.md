@@ -1,5 +1,7 @@
 # NoteTaker – Markdown Note‑Taking App
 
+![Screenshot](screenshot.png)
+
 **NoteTaker** is a cross‑platform desktop application for writing and previewing Markdown notes. It features a clean dark interface, live HTML preview, search, auto‑save, and a copy button for code blocks – all packaged as a native installer (Windows `.msi`) or a portable ZIP.
 
 ---
