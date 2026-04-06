@@ -102,21 +102,6 @@ jobs:
           java-package: jdk+fx
           cache: maven
 
-      - name: Cache JavaFX JMODs (macOS)
-        id: cache-jmods-mac
-        uses: actions/cache@v3
-        with:
-          path: ~/javafx-jmods-21
-          key: javafx-jmods-21-macos
-
-      - name: Download JavaFX JMODs (macOS)
-        if: steps.cache-jmods-mac.outputs.cache-hit != 'true'
-        run: |
-          curl -L -o jmods.zip https://download2.gluonhq.com/openjfx/21/openjfx-21_osx-x64_bin-jmods.zip
-          mkdir -p ~/javafx-jmods-21
-          unzip -q jmods.zip -d ~/javafx-jmods-21
-          rm jmods.zip
-
       - name: Build fat JAR
         run: mvn clean package
 
@@ -135,9 +120,7 @@ jobs:
             --input target \
             --name NoteTaker \
             --main-jar "notetaker-${{ env.VERSION }}.jar" \
-            --main-class com.exemple.notetaker.App \
-            --module-path "$HOME/javafx-jmods-21" \
-            --add-modules java.logging,javafx.controls,javafx.fxml,javafx.web
+            --main-class com.exemple.notetaker.App
 
           jpackage --type dmg \
             --app-image NoteTaker \
@@ -166,21 +149,6 @@ jobs:
           java-package: jdk+fx
           cache: maven
 
-      - name: Cache JavaFX JMODs (Linux)
-        id: cache-jmods-linux
-        uses: actions/cache@v3
-        with:
-          path: ~/javafx-jmods-21
-          key: javafx-jmods-21-linux
-
-      - name: Download JavaFX JMODs (Linux)
-        if: steps.cache-jmods-linux.outputs.cache-hit != 'true'
-        run: |
-          wget -O jmods.zip https://download2.gluonhq.com/openjfx/21/openjfx-21_linux-x64_bin-jmods.zip
-          mkdir -p ~/javafx-jmods-21
-          unzip -q jmods.zip -d ~/javafx-jmods-21
-          rm jmods.zip
-
       - name: Build fat JAR
         run: mvn clean package
 
@@ -199,9 +167,7 @@ jobs:
             --input target \
             --name notetaker \
             --main-jar "notetaker-${{ env.VERSION }}.jar" \
-            --main-class com.exemple.notetaker.App \
-            --module-path "$HOME/javafx-jmods-21" \
-            --add-modules java.logging,javafx.controls,javafx.fxml,javafx.web
+            --main-class com.exemple.notetaker.App
 
           jpackage --type deb \
             --app-image notetaker \
