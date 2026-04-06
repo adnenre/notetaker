@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.web.WebView?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+    fx:controller="com.exemple.notetaker.MainController" spacing="5"
+    stylesheets="@styles.css">
+    <padding>
+        <Insets top="5" right="5" bottom="5" left="5" />
+    </padding>
+
+
+    <ToolBar>
+        <Button text="+" onAction="#newNote">
+            <tooltip>
+                <Tooltip text="New Note" />
+            </tooltip>
+        </Button>
+        <Label text="New Note" style="-fx-padding: 0 10 0 0;" />
+        <Region HBox.hgrow="ALWAYS" />   <!-- This pushes everything after it to the right -->
+        <TextField fx:id="searchField" promptText="Search..." onKeyReleased="#filterNotes" />
+    </ToolBar>
+
+
+    <SplitPane fx:id="splitPane" dividerPositions="0.25, 0.6" VBox.vgrow="ALWAYS">
+        <ListView fx:id="listView" VBox.vgrow="ALWAYS" />
+        <VBox fx:id="editorPane" spacing="5">
+
+            <TextArea fx:id="contentArea" VBox.vgrow="ALWAYS" wrapText="true" />
+            <Label fx:id="statusLabel" text="ready" />
+        </VBox>
+
+        <VBox>
+
+            <StackPane fx:id="previewStackPane" VBox.vgrow="ALWAYS">
+                <WebView fx:id="webView" StackPane.alignment="CENTER" />
+            </StackPane>
+        </VBox>
+    </SplitPane>
+</VBox>

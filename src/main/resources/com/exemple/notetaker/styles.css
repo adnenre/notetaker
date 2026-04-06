@@ -1,0 +1,271 @@
+/* Thème sombre pour NoteTaker */
+.root {
+  -fx-base: #222;
+  -fx-background: #222;
+  -fx-control-inner-background: #333;
+  -fx-text-fill: white;
+}
+
+/* Fond général */
+.root,
+.vbox,
+.hbox,
+.split-pane,
+.tab-pane,
+.scroll-pane,
+.tool-bar {
+  -fx-background-color: #222;
+}
+
+/* Textes */
+.label,
+.text,
+.text-area,
+.text-field,
+.combo-box,
+.list-view,
+.tree-view,
+.table-view {
+  -fx-text-fill: white;
+}
+
+/* Champs de texte et zone de texte */
+.text-field,
+.text-area,
+.combo-box,
+.list-view,
+.tree-view {
+  -fx-background-color: #333;
+  -fx-border-color: #444;
+  -fx-border-radius: 3px;
+}
+
+.text-area .content {
+  -fx-background-color: #333;
+}
+#searchField {
+  -fx-background-color: #3a3a3a;
+  -fx-border-color: #555;
+  -fx-border-radius: 20px; /* Arrondi important */
+  -fx-background-radius: 20px; /* Arrondi du fond */
+  -fx-padding: 8px 16px; /* Espacement intérieur */
+  -fx-text-fill: white;
+  -fx-prompt-text-fill: #a0a0a0;
+}
+/* Boutons arrondis */
+.button,
+.toggle-button {
+  -fx-background-color: #3a3a3a;
+  -fx-text-fill: white;
+  -fx-border-color: #555;
+  -fx-border-radius: 20px; /* Arrondi important */
+  -fx-background-radius: 20px; /* Arrondi du fond */
+  -fx-padding: 8px 16px; /* Espacement intérieur */
+}
+
+.button:hover,
+.toggle-button:hover {
+  -fx-background-color: #4a4a4a;
+  -fx-border-color: #777;
+}
+
+/* Pour des boutons plus petits ou spécifiques */
+.small-button {
+  -fx-border-radius: 15px;
+  -fx-background-radius: 15px;
+  -fx-padding: 4px 12px;
+  -fx-font-size: 11px;
+}
+
+/* Bouton arrondi avec icône (optionnel) */
+.round-button {
+  -fx-border-radius: 25px;
+  -fx-background-radius: 25px;
+  -fx-min-width: 40px;
+  -fx-min-height: 40px;
+  -fx-padding: 0;
+}
+.button:pressed,
+.toggle-button:pressed {
+  -fx-background-color: #2a2a2a;
+}
+
+/* Barre d'outils */
+.tool-bar {
+  -fx-background-color: #2a2a2a;
+  -fx-border-color: #444;
+}
+
+/* Arborescence (TreeView) */
+.tree-view {
+  -fx-background-color: #222;
+}
+
+.tree-cell {
+  -fx-text-fill: white;
+  -fx-background-color: transparent;
+}
+
+.tree-cell:selected {
+  -fx-background-color: #3a6ea5;
+}
+
+/* ListView */
+.list-cell {
+  -fx-text-fill: white;
+  -fx-background-color: #333;
+}
+
+.list-cell:selected {
+  -fx-background-color: #3a6ea5;
+}
+
+/* ComboBox */
+.combo-box .list-cell {
+  -fx-text-fill: white;
+}
+
+.combo-box-popup .list-view {
+  -fx-background-color: #333;
+}
+
+/* WebView (view) */
+.web-view {
+  -fx-background-color: #222;
+}
+
+/* ScrollBars */
+.scroll-bar {
+  -fx-background-color: #333;
+}
+
+.scroll-bar .thumb {
+  -fx-background-color: #555;
+}
+
+/* Onglets (TabPane) */
+.tab-pane .tab-header-area {
+  -fx-background-color: #222;
+}
+
+.tab {
+  -fx-background-color: #333;
+  -fx-text-fill: white;
+}
+
+.tab:selected {
+  -fx-background-color: #3a6ea5;
+}
+
+/* MenuBar */
+.menu-bar {
+  -fx-background-color: #2a2a2a;
+}
+
+.menu {
+  -fx-text-fill: white;
+}
+
+.menu-item {
+  -fx-text-fill: white;
+}
+
+.menu-item:hover {
+  -fx-background-color: #3a6ea5;
+}
+
+/* Tooltip */
+.tooltip {
+  -fx-background-color: #444;
+  -fx-text-fill: white;
+}
+
+/* Slider, ProgressBar, etc. (optionnels) */
+.slider .track {
+  -fx-background-color: #444;
+}
+
+.slider .thumb {
+  -fx-background-color: #3a6ea5;
+}
+
+.progress-bar .bar {
+  -fx-background-color: #3a6ea5;
+}
+/* Style de base pour toutes les cellules de l'arbre (notes) */
+/* Style de base pour toutes les cellules de l'arbre (notes) */
+/* Style pour toutes les cellules de l'arbre */
+.tree-cell {
+  -fx-background-color: #2b2b2b;
+  -fx-padding: 5px;
+}
+
+/* Bordure bleue UNIQUEMENT pour les cellules sélectionnées qui représentent une note */
+.tree-cell:selected {
+  -fx-border-color: transparent transparent transparent #00bfff;
+  -fx-border-width: 0 0 0 3px;
+  -fx-border-insets: 0;
+}
+
+/* Supprimer la bordure pour les catégories (non sélectionnables ou sans id) */
+.tree-cell:selected .tree-cell:no-note {
+  -fx-border-color: transparent;
+}
+
+/* Effet survol */
+.tree-cell:hover {
+  -fx-background-color: #3c3f41;
+}
+
+/* Style du label dans la cellule */
+.tree-cell .label {
+  -fx-text-fill: white;
+  -fx-font-size: 14px;
+}
+
+/* Bouton supprimer dans la cellule */
+.tree-cell .button {
+  -fx-background-color: transparent;
+  -fx-text-fill: #ff6666;
+  -fx-font-size: 14px;
+  -fx-cursor: hand;
+}
+
+.tree-cell .button:hover {
+  -fx-text-fill: #ff0000;
+}
+
+/* Empêcher le surlignage bleu par défaut de JavaFX */
+.tree-cell:focused {
+  -fx-focus-color: transparent;
+  -fx-faint-focus-color: transparent;
+}
+#fullscreenButton {
+  -fx-background-color: rgba(0, 0, 0, 0.6);
+  -fx-background-radius: 20px;
+  -fx-padding: 8px;
+  -fx-cursor: hand;
+  -fx-translate-x: -10px;
+  -fx-translate-y: -10px;
+}
+
+#fullscreenButton:hover {
+  -fx-background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* Label de statut */
+#statusLabel {
+  -fx-text-fill: #888888;
+  -fx-font-size: 12px;
+}
+
+.note-list .list-cell:selected {
+  -fx-border-color: transparent transparent transparent #0078d7;
+  -fx-border-width: 0 0 0 3px;
+  -fx-background-color: #3a3a3a;
+}
+
+/* Optional: hover effect */
+.note-list .list-cell:hover {
+  -fx-background-color: #4a4a4a;
+}
