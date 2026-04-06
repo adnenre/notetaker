@@ -4,14 +4,161 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version number (without v, e.g., 1.0.0)"
+        required: true
+        type: string
+      create_release:
+        description: "Create GitHub Release?"
+        required: true
+        default: true
+        type: boolean
 
 jobs:
-  create-zip-distribution:
+  # ----- Windows (MSI) -----
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JDK 21 (Liberica with JavaFX)
+        uses: actions/setup-java@v4
+        with:
+          distribution: "liberica"
+          java-version: "21"
+          java-package: jdk+fx
+          cache: maven
+
+      - name: Cache JavaFX JMODs (Windows)
+        id: cache-jmods-win
+        uses: actions/cache@v3
+        with:
+          path: C:\javafx-jmods-21
+          key: javafx-jmods-21-windows
+
+      - name: Download JavaFX JMODs (Windows)
+        if: steps.cache-jmods-win.outputs.cache-hit != 'true'
+        run: |
+          curl -L -o jmods.zip https://download2.gluonhq.com/openjfx/21/openjfx-21_windows-x64_bin-jmods.zip
+          mkdir C:\javafx-jmods-21
+          tar -xf jmods.zip -C C:\javafx-jmods-21
+          Remove-Item jmods.zip
+
+      - name: Install WiX Toolset v3.11
+        run: |
+          curl -L -o wix311.exe https://github.com/wixtoolset/wix3/releases/download/wix3111rtm/wix311.exe
+          .\wix311.exe /quiet /norestart
+          echo "C:\Program Files (x86)\WiX Toolset v3.11\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Build fat JAR
+        run: mvn clean package
+
+      - name: Determine version
+        shell: bash
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+          else
+            echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+          fi
+
+      - name: Create MSI installer
+        run: |
+          jpackage --type app-image `
+            --input target `
+            --name NoteTaker `
+            --main-jar "notetaker-${{ env.VERSION }}.jar" `
+            --main-class com.exemple.notetaker.App `
+            --module-path "C:/javafx-jmods-21" `
+            --add-modules java.logging,javafx.controls,javafx.fxml,javafx.web
+
+          jpackage --type msi `
+            --app-image NoteTaker `
+            --name NoteTaker `
+            --app-version ${{ env.VERSION }} `
+            --vendor "YourCompany" `
+            --description "NoteTaker - Markdown note taking app" `
+            --win-menu --win-shortcut
+
+      - name: Upload MSI
+        uses: actions/upload-artifact@v4
+        with:
+          name: NoteTaker-Windows-${{ env.VERSION }}
+          path: NoteTaker-${{ env.VERSION }}.msi
+
+  # ----- macOS (DMG) -----
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JDK 21 (Liberica with JavaFX)
+        uses: actions/setup-java@v4
+        with:
+          distribution: "liberica"
+          java-version: "21"
+          java-package: jdk+fx
+          cache: maven
+
+      - name: Cache JavaFX JMODs (macOS)
+        id: cache-jmods-mac
+        uses: actions/cache@v3
+        with:
+          path: ~/javafx-jmods-21
+          key: javafx-jmods-21-macos
+
+      - name: Download JavaFX JMODs (macOS)
+        if: steps.cache-jmods-mac.outputs.cache-hit != 'true'
+        run: |
+          curl -L -o jmods.zip https://download2.gluonhq.com/openjfx/21/openjfx-21_osx-x64_bin-jmods.zip
+          mkdir -p ~/javafx-jmods-21
+          unzip -q jmods.zip -d ~/javafx-jmods-21
+          rm jmods.zip
+
+      - name: Build fat JAR
+        run: mvn clean package
+
+      - name: Determine version
+        shell: bash
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+          else
+            echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+          fi
+
+      - name: Create DMG installer
+        run: |
+          jpackage --type app-image \
+            --input target \
+            --name NoteTaker \
+            --main-jar "notetaker-${{ env.VERSION }}.jar" \
+            --main-class com.exemple.notetaker.App \
+            --module-path "$HOME/javafx-jmods-21" \
+            --add-modules java.logging,javafx.controls,javafx.fxml,javafx.web
+
+          jpackage --type dmg \
+            --app-image NoteTaker \
+            --name NoteTaker \
+            --app-version ${{ env.VERSION }} \
+            --vendor "YourCompany" \
+            --description "NoteTaker - Markdown note taking app"
+
+      - name: Upload DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: NoteTaker-macOS-${{ env.VERSION }}
+          path: NoteTaker-${{ env.VERSION }}.dmg
+
+  # ----- Linux (DEB) -----
+  build-linux:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up JDK 21 (Liberica with JavaFX)
+      - name: Setup JDK 21 (Liberica with JavaFX)
         uses: actions/setup-java@v4
         with:
           distribution: "liberica"
@@ -20,52 +167,71 @@ jobs:
           cache: maven
 
       - name: Cache JavaFX JMODs (Linux)
-        id: cache-jmods
+        id: cache-jmods-linux
         uses: actions/cache@v3
         with:
           path: ~/javafx-jmods-21
           key: javafx-jmods-21-linux
 
-      - name: Download JavaFX JMODs (if not cached)
-        if: steps.cache-jmods.outputs.cache-hit != 'true'
+      - name: Download JavaFX JMODs (Linux)
+        if: steps.cache-jmods-linux.outputs.cache-hit != 'true'
         run: |
-          wget -O javafx-jmods.zip https://download2.gluonhq.com/openjfx/21/openjfx-21_linux-x64_bin-jmods.zip
+          wget -O jmods.zip https://download2.gluonhq.com/openjfx/21/openjfx-21_linux-x64_bin-jmods.zip
           mkdir -p ~/javafx-jmods-21
-          unzip -q javafx-jmods.zip -d ~/javafx-jmods-21
-          rm javafx-jmods.zip
+          unzip -q jmods.zip -d ~/javafx-jmods-21
+          rm jmods.zip
 
       - name: Build fat JAR
         run: mvn clean package
 
-      - name: Extract version
-        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+      - name: Determine version
+        shell: bash
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+          else
+            echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+          fi
 
-      - name: Create cross‑platform app image (portable)
+      - name: Create DEB installer
         run: |
           jpackage --type app-image \
             --input target \
-            --name NoteTaker \
+            --name notetaker \
             --main-jar "notetaker-${{ env.VERSION }}.jar" \
             --main-class com.exemple.notetaker.App \
             --module-path "$HOME/javafx-jmods-21" \
-            --add-modules java.logging,javafx.controls,javafx.fxml,javafx.web \
-            --icon src/main/resources/com/exemple/notetaker/icon.png
+            --add-modules java.logging,javafx.controls,javafx.fxml,javafx.web
 
-      - name: Package into ZIP
-        run: |
-          zip -r "NoteTaker-${{ env.VERSION }}.zip" NoteTaker
+          jpackage --type deb \
+            --app-image notetaker \
+            --name notetaker \
+            --app-version ${{ env.VERSION }} \
+            --vendor "YourCompany" \
+            --description "NoteTaker - Markdown note taking app"
 
-      - name: Upload ZIP as artifact
+      - name: Upload DEB
         uses: actions/upload-artifact@v4
         with:
-          name: NoteTaker-${{ env.VERSION }}
-          path: NoteTaker-${{ env.VERSION }}.zip
+          name: NoteTaker-Linux-${{ env.VERSION }}
+          path: notetaker_${{ env.VERSION }}_amd64.deb
 
+  # ----- Create GitHub Release (if applicable) -----
   create-release:
     runs-on: ubuntu-latest
-    needs: create-zip-distribution
+    needs: [build-windows, build-macos, build-linux]
+    if: github.event_name == 'push' || github.event.inputs.create_release == 'true'
     steps:
-      - name: Download artifacts
+      - name: Determine version
+        shell: bash
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+          else
+            echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+          fi
+
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
@@ -73,14 +239,20 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          files: artifacts/NoteTaker-${{ env.VERSION }}/NoteTaker-${{ env.VERSION }}.zip
+          files: |
+            artifacts/NoteTaker-Windows-${{ env.VERSION }}/NoteTaker-${{ env.VERSION }}.msi
+            artifacts/NoteTaker-macOS-${{ env.VERSION }}/NoteTaker-${{ env.VERSION }}.dmg
+            artifacts/NoteTaker-Linux-${{ env.VERSION }}/notetaker_${{ env.VERSION }}_amd64.deb
           body: |
-            ## NoteTaker ${{ github.ref_name }}
+            ## NoteTaker ${{ env.VERSION }}
 
-            ### Cross‑platform ZIP distribution
-            - Download the ZIP file for your operating system.
-            - Extract it anywhere.
-            - Run `NoteTaker/bin/NoteTaker` (Linux/macOS) or `NoteTaker\bin\NoteTaker.bat` (Windows).
-            - No Java installation required – the JRE is bundled.
+            ### Download & Install
+            - **Windows**: `NoteTaker-${{ env.VERSION }}.msi`
+            - **macOS**: `NoteTaker-${{ env.VERSION }}.dmg`
+            - **Linux (Debian/Ubuntu)**: `notetaker_${{ env.VERSION }}_amd64.deb`
+
+            No Java installation required – the JRE is bundled.
           draft: false
           prerelease: false
+          tag_name: v${{ env.VERSION }}
+          name: NoteTaker v${{ env.VERSION }}
