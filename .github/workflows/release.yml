@@ -88,53 +88,6 @@ jobs:
           name: NoteTaker-Windows-${{ env.VERSION }}
           path: NoteTaker-${{ env.VERSION }}.msi
 
-  # ----- macOS (DMG) -----
-  build-macos:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup JDK 21 (Liberica with JavaFX)
-        uses: actions/setup-java@v4
-        with:
-          distribution: "liberica"
-          java-version: "21"
-          java-package: jdk+fx
-          cache: maven
-
-      - name: Build fat JAR
-        run: mvn clean package
-
-      - name: Determine version
-        shell: bash
-        run: |
-          if [ -n "${{ github.event.inputs.version }}" ]; then
-            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
-          else
-            echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
-          fi
-
-      - name: Create DMG installer
-        run: |
-          jpackage --type app-image \
-            --input target \
-            --name NoteTaker \
-            --main-jar "notetaker-${{ env.VERSION }}.jar" \
-            --main-class com.exemple.notetaker.App
-
-          jpackage --type dmg \
-            --app-image NoteTaker \
-            --name NoteTaker \
-            --app-version ${{ env.VERSION }} \
-            --vendor "YourCompany" \
-            --description "NoteTaker - Markdown note taking app"
-
-      - name: Upload DMG
-        uses: actions/upload-artifact@v4
-        with:
-          name: NoteTaker-macOS-${{ env.VERSION }}
-          path: NoteTaker-${{ env.VERSION }}.dmg
-
   # ----- Linux (DEB) -----
   build-linux:
     runs-on: ubuntu-latest
@@ -185,8 +138,10 @@ jobs:
   # ----- Create GitHub Release (if applicable) -----
   create-release:
     runs-on: ubuntu-latest
-    needs: [build-windows, build-macos, build-linux]
+    needs: [build-windows, build-linux]
     if: github.event_name == 'push' || github.event.inputs.create_release == 'true'
+    permissions:
+      contents: write # Required to create a release
     steps:
       - name: Determine version
         shell: bash
@@ -207,14 +162,12 @@ jobs:
         with:
           files: |
             artifacts/NoteTaker-Windows-${{ env.VERSION }}/NoteTaker-${{ env.VERSION }}.msi
-            artifacts/NoteTaker-macOS-${{ env.VERSION }}/NoteTaker-${{ env.VERSION }}.dmg
             artifacts/NoteTaker-Linux-${{ env.VERSION }}/notetaker_${{ env.VERSION }}_amd64.deb
           body: |
             ## NoteTaker ${{ env.VERSION }}
 
             ### Download & Install
             - **Windows**: `NoteTaker-${{ env.VERSION }}.msi`
-            - **macOS**: `NoteTaker-${{ env.VERSION }}.dmg`
             - **Linux (Debian/Ubuntu)**: `notetaker_${{ env.VERSION }}_amd64.deb`
 
             No Java installation required – the JRE is bundled.
