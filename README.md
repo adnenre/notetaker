@@ -69,13 +69,8 @@ jpackage --type app-image \
 After creating the app image, run:
 
 ```bash
-jpackage --type msi \
-  --app-image NoteTaker \
-  --name NoteTaker \
-  --app-version 1.0.0 \
-  --vendor "YourCompany" \
-  --description "NoteTaker - Markdown note taking app" \
-  --win-menu --win-shortcut
+chmod +x build-installer.sh
+./build-installer.sh
 ```
 
 > **Note**: For macOS/Linux installers, replace `--type msi` with `--type dmg` or `--type deb`.
